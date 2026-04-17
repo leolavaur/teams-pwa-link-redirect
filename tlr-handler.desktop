@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Teams PWA Link Redirect Handler
+Exec=sh -c 'xdg-open "$(echo "%u" | sed "s/^tlrs:/https:/;s/^tlr:/http:/")"'
+Terminal=false
+Type=Application
+MimeType=x-scheme-handler/tlr;x-scheme-handler/tlrs;

@@ -1,88 +1,54 @@
+## What?
+
+This is a fork of the original [teams-pwa-link-redirect](https://github.com/frederic-klein/teams-pwa-link-redirect) tool by Frederic Klein adapted to my use case.
+It allows you to open links from the Microsoft Teams PWA in your default browser (in my case the Firefox Flatpak) instead of the brower in which the PWA is running.
+
+
 ## Why?
 
-The native Microsoft Teams application for Linux is not well maintained, so we switched to the [Teams PWA in Google Chrome](https://techcommunity.microsoft.com/t5/microsoft-teams-blog/microsoft-teams-progressive-web-app-now-available-on-linux/bc-p/3674458/highlight/true#M11387%2309), which works rather well.
-We still want to use firefox as our default browser without maintaining active login sessions in multiple browsers. Clicking links in teams therefor becomes a bit annoying.
+The official Microsoft Teams application for Linux has been deprecated, and the alternatives often ahve issues with Enterprise settings.
+The Microsoft Teams PWA is the only officially supported option for Linux users, but it only works well with Chromium-based browsers, and Edge in particular.
+Unfortunately, the app does not allow you to choose a different default browser, and it opens links in the same browser in which the PWA is running. 
 
-## How does it work?
 
-This little experiment introduces two new schemes for (ftl and ftls for **f**irefox **t**eams **l**inks) and an browser extension for chrome (works for edge as well). Clicked links in the Teams PWA are opened in Chrome and the extension modifies https to flts and http to flt, which causes Chrome to prompt for approval to open the `FTL Handler`. The FTL Handler is defined by the `firefox-ftl.desktop` file, which reverts the http/https replacement and opens the links in firefox.
+## How?
+
+This tool introduces two new schemes to handle links outside of the Teams PWA: `tlr` (Teams Link Redirect) and `tlrs` for HTTP and HTTPS links, respectively.
+The browser extension modifies all links matching `https?://` to the new schemes, which causes the browser to prompt for approval to open the TLR Handler.
+The TLR Handler is defined by the `tlr-handler.desktop` file, which reverts the scheme replacement and opens the links in the default browser using `xdg-open`.
+
 
 ## Installation
 
-1. clone this repo `git clone git@github.com:frederic-klein/teams-pwa-link-redirect.git`
-1. make the firefox-ftl.desktop file available in your system: `sudo cp ubuntu/firefox-ftl.desktop /usr/share/applications/`
-1. install the chrome extension
-    1. open chrome
-    1. go to [chrome://extensions/](chrome://extensions/)
-    1. enable developer mode
-    1. select Load unpacked
-    1. select the cloned repo folder
-    1. reopen the teams pwa or `ctrl+f5`
-1. associate the schemes with the desktop file:
-```BASH
-xdg-mime default firefox-ftl.desktop x-scheme-handler/ftl
-xdg-mime default firefox-ftl.desktop x-scheme-handler/ftls
-```
-
-### Bypassing the `Open FTL Handler` Prompts
-
-Chrome may display an "Open FTL Handler" prompt, which can only be permanently accepted per-domain.
-
-You can define a policy to accept the custom protocol using the following command based on https://superuser.com/a/1588146
-
-#### chrome
+1. Clone this repo `git clone git@github.com:leolavaur/teams-pwa-link-redirect.git`
+2. Copy the `TLR Handler.desktop` file to `~/.local/share/applications/` and update the `Exec` path if necessary.
+3. Install the extension in your browser:
+  1. open a chrome-based browser
+  2. go to the extensions page (e.g. `edge://extensions/` for Edge)
+  3. Enable developer mode
+  4. Select "Load unpacked"
+  5. Select the cloned repo folder
+  6. Reopen the Teams PWA app or `ctrl+F5`
+4. associate the schemes with the desktop file:
 
 ```bash
-sudo bash
-mkdir -p /etc/opt/chrome/policies/{managed,recommended}
-cat <<EOF >/etc/opt/chrome/policies/managed/allow_ftl_protocol.json
-{
-  "URLWhitelist": [
-    "ftl:*", "ftls:*",
-  ],
-  "URLAllowlist": [
-    "ftl:*", "ftls:*",
-  ]
-}
-EOF
+xdg-mime default tlr-handler.desktop x-scheme-handler/tlr
+xdg-mime default tlr-handler.desktop x-scheme-handler/tlrs
 ```
 
-#### chromium
 
-```bash
-sudo bash
-mkdir -p /etc/chromium/policies/{managed,recommended}
-cat <<EOF >/etc/chromium/policies/managed/allow_ftl_protocol.json
-{
-  "URLWhitelist": [
-    "ftl:*", "ftls:*",
-  ],
-  "URLAllowlist": [
-    "ftl:*", "ftls:*",
-  ]
-}
-EOF
-```
+## Notification of changes
 
-#### edge
+See the commit history for details on the changes made to the original code.
+In summary:
+* Changed the naming and updated the scheme accordingly (`ftl` -> `tlr`)
+* Updated the handler to use xdg-open
+* Updated README.md
+* Added the new Teams URL ([https://teams.cloud.microsoft](https://teams.cloud.microsoft))
 
-```bash
-sudo bash
-mkdir -p /etc/opt/edge/policies/{managed,recommended}
-cat <<EOF >/etc/opt/edge/policies/managed/allow_ftl_protocol.json
-{
-  "URLWhitelist": [
-    "ftl:*", "ftls:*",
-  ],
-  "URLAllowlist": [
-    "ftl:*", "ftls:*",
-  ]
-}
-EOF
-```
 
-## Contributors
+## Acknoledgments
 
-Thanks to the following contributors for improving this helper ♡
-
-* Ryan Cole https://github.com/ryanc-me
+Thanks to the original contributors for making this helper:
+* Frederic Klein ([GitHub](https://github.com/frederic-klein))
+* Ryan Cole ([GitHub](https://github.com/ryanc-me))
